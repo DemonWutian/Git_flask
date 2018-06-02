@@ -124,7 +124,7 @@ $(function(){
                 $(".login_form_con").hide();
                 $(".user_btns").hide();
                 $(".user_login").show();
-                $(".lgin_pic").attr("src", "/static/news/images/"+data.avatar)
+                $(".lgin_pic").attr("src", data.avatar_url);
                 $("#nick_name").text(data.nick_name);
             }
             else if(data.result==4){
@@ -262,7 +262,7 @@ function fnChangeMenu(n) {
     if (n >= 0) {
         $li.eq(n).addClass('active').siblings().removeClass('active');
         // 执行 a 标签的点击事件
-        $li.eq(n).find('a')[0].click()
+        // $li.eq(n).find('a')[0].click()
     }
 }
 

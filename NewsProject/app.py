@@ -6,8 +6,8 @@ from flask_session import Session
 
 def creat_app(config):
     app = Flask(__name__)
-    CSRFProtect(app)
     app.config.from_object(config)
+    CSRFProtect(app)
 
     # 使用session初始化
     Session(app)

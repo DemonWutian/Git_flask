@@ -10,7 +10,8 @@ $(function () {
 
         var signature = $("#signature").val();
         var nick_name = $("#nick_name").val();
-        var gender = $(".gender").val();
+        // 选择被用户选中的性别选项
+        var gender = $(".gender:checked").val();
 
         if (!nick_name) {
             alert('请输入昵称');

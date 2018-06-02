@@ -5,7 +5,8 @@ from flask import redirect
 from flask import render_template
 from flask import request
 from flask import session
-from models import db, UserInfo
+from models import db, UserInfo, NewsInfo, NewsCategory
+from datetime import datetime
 
 user_blueprint = Blueprint("user", __name__, url_prefix="/user")
 
@@ -125,7 +126,7 @@ def login():
         if user.check_pwd(pwd):
             # 正确
             session["user_id"] = user.id
-            return jsonify(result=3, avatar=user.avatar, nick_name=user.nick_name)
+            return jsonify(result=3, avatar_url=user.avatar_url, nick_name=user.nick_name)
         else:
             # 错误
             return jsonify(result=4)
@@ -191,7 +192,11 @@ def base():
         user.signature = signature
         user.nick_name = nick_name
         # 布尔类型需要转换
-        user.gender = bool(gender)
+        if gender == "True":
+            gender = True
+        else:
+            gender = False
+        user.gender = gender  # True if gender=="True" else False
         # 提交数据
         try:
             db.session.commit()
@@ -209,7 +214,7 @@ def pic():
     user = UserInfo.query.get(user_id)
 
     if request.method == "GET":
-        return render_template("news/user_pic_info.html",user=user)
+        return render_template("news/user_pic_info.html", user=user)
     elif request.method == "POST":
         # 接收文件
         f1 = request.files.get("avatar")
@@ -230,28 +235,212 @@ def pic():
 @user_blueprint.route('/follow')
 @login_required
 def follow():
-    return render_template("news/user_follow.html")
+    user_id = session['user_id']
+    user = UserInfo.query.get(user_id)
+
+    # 接收页码值参数
+    page = int(request.args.get('page', '1'))
+    # 分页
+    pagination = user.follow_user.paginate(page, 4, False)
+    # 获取当前页数据
+    user_list = pagination.items
+    # 总页数
+    total_page = pagination.pages
+
+    return render_template(
+        'news/user_follow.html',
+        user_list=user_list,
+        total_page=total_page,
+        page=page
+    )
 
 
-@user_blueprint.route('/pwd')
+@user_blueprint.route('/pwd', methods=["POST", "GET"])
 @login_required
 def pwd():
-    return render_template("news/user_pass_info.html")
+    user_id = session["user_id"]
+    user = UserInfo.query.get(user_id)
+    if request.method == "GET":
+        return render_template("news/user_pass_info.html")
+    elif request.method == "POST":
+        # 接收数据
+        dict1 = request.form
+        current_pwd = dict1.get("current_pwd")
+        new_pwd = dict1.get("new_pwd")
+        new_pwd2 = dict1.get("new_pwd2")
+        # 判断数据格式和正确性
+        if not all([current_pwd, new_pwd, new_pwd2]):
+            msg = "密码不能为空"
+            return render_template(
+                "news/user_pass_info.html",
+                msg=msg
+            )
+        # 判断密码是否符合规定
+        import re
+        if not re.match(r"[a-zA-Z0-9_]{6,20}", current_pwd):
+            msg = "旧密码输入有误"
+            return render_template(
+                "news/user_pass_info.html",
+                msg=msg
+            )
+        if not re.match(r"[a-zA-Z0-9_]{6,20}", new_pwd):
+            msg = "新密码格式有误, 6-20大小写字母, 0-9数字以及下划线'_'"
+            return render_template(
+                "news/user_pass_info.html",
+                msg=msg
+            )
+        # 判断旧密码和新密码是否一致
+        if current_pwd == new_pwd:
+            msg = "新密码不能和旧密码重复哦!"
+            return render_template(
+                "news/user_pass_info.html",
+                msg=msg
+            )
+        # 判断两次输入是否一样
+        if new_pwd != new_pwd2:
+            msg = "两次输入不一致"
+            return render_template(
+                "news/user_pass_info.html",
+                msg=msg
+            )
+        # 判断旧密码是否和数据库中一样
+        if not user.check_pwd(current_pwd):
+            msg = "旧密码错误!"
+            return render_template(
+                "news/user_pass_info.html",
+                msg=msg
+            )
+        # 所有输入都无误
+        user.password = new_pwd
+        # 提交数据库
+        db.session.commit()
+        # 响应
+        return render_template(
+            "news/user_pass_info.html",
+            msg="密码修改成功"
+        )
 
 
 @user_blueprint.route('/collect')
 @login_required
 def collect():
-    return render_template("news/user_collection.html")
+    # 查询数据库
+    user_id = session["user_id"]
+    user = UserInfo.query.get(user_id)
+    # 从模板接收页码
+    page = int(request.args.get("page", "1"))
+    # 分页
+    pagination = user.news_collect.paginate(page, 6, False)
+    # 获取当前页数据
+    newslist = pagination.items
+    # 总页码
+    total_page = pagination.pages
+    return render_template(
+        "news/user_collection.html",
+        page=page,
+        newslist=newslist,
+        total_page=total_page
+    )
 
 
-@user_blueprint.route('/release')
+@user_blueprint.route('/release', methods=['GET', 'POST'])
 @login_required
 def release():
-    return render_template("news/user_news_release.html")
+    # 查询所有的分类，供编辑人员选择
+    category_list = NewsCategory.query.all()
+    # 接收新闻的编号
+    news_id = request.args.get('news_id')
+
+    if request.method == 'GET':
+        if news_id is None:
+            # 展示页面
+            return render_template(
+                'news/user_news_release.html',
+                category_list=category_list,
+                news=None
+            )
+        else:
+            # 如果有新闻编号则进行修改，所以需要查询展示
+            news = NewsInfo.query.get(int(news_id))
+            return render_template(
+                'news/user_news_release.html',
+                category_list=category_list,
+                news=news
+            )
+    elif request.method == 'POST':
+        # 新闻的添加处理
+        # 1.接收请求
+        dict1 = request.form
+        title = dict1.get('title')
+        category_id = dict1.get('category')
+        summary = dict1.get('summary')
+        content = dict1.get('content')
+        # 接收新闻图片
+        news_pic = request.files.get('news_pic')
+
+        if news_id is None:
+            # 2.验证
+            # 2.1.验证数据不为空
+            if not all([title, category_id, summary, content, news_pic]):
+                return render_template(
+                    'news/user_news_release.html',
+                    category_list=category_list,
+                    msg='请将数据填写完整'
+                )
+        else:
+            if not all([title, category_id, summary, content]):
+                return render_template(
+                    'news/user_news_release.html',
+                    category_list=category_list,
+                    msg='请将数据填写完整'
+                )
+
+        # 上传图片(需要在添加之前上传, 才能得到图片地址)
+        if news_pic:
+            from utils.qiniu_xjzx import upload_pic
+            filename = upload_pic(news_pic)
+
+        # 3.添加
+        if news_id is None:
+            news = NewsInfo()
+        else:
+            news = NewsInfo.query.get(news_id)
+        news.category_id = int(category_id)
+
+        if news_pic:
+            news.pic = filename
+
+        news.title = title
+        news.summary = summary
+        news.content = content
+        news.status = 1
+        news.update_time = datetime.now()
+        news.user_id = session['user_id']
+
+        # 4.提交到数据库
+        db.session.add(news)
+        db.session.commit()
+
+        # 5.响应：转到列表页
+        return redirect('/user/newslist')
 
 
 @user_blueprint.route('/newslist')
 @login_required
 def newslist():
-    return render_template("news/user_news_list.html")
+    # 查询数据库
+    user_id = session["user_id"]
+    user = UserInfo.query.get(user_id)
+
+    # 获取页码
+    page = int(request.args.get("page", "1"))
+    # 查询所有用户收藏的新闻
+    pagination = user.news.order_by(NewsInfo.update_time.desc()).paginate(page, 6, False)
+    newslist = pagination.items
+    total_page = pagination.pages
+    return render_template(
+        "news/user_news_list.html",
+        page=page,
+        newslist=newslist,
+        total_page=total_page
+    )

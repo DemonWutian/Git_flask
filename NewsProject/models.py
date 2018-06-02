@@ -51,9 +51,9 @@ class NewsInfo(db.Model, BaseModel):
     #news.comments
     comments = db.relationship('NewsComment', backref='news', lazy='dynamic', order_by='NewsComment.id.desc()')
 
-    # @property
-    # def pic_url(self):
-    #     return current_app.config.get('QINIU_URL') + self.pic
+    @property
+    def pic_url(self):
+        return current_app.config.get('QINIU_URL') + self.pic
     #
     # def to_index_dict(self):
     #     return {

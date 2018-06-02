@@ -1,13 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<meta charset="UTF-8">
-	<title>{{ title }}</title>
-	<link rel="stylesheet" type="text/css" href="/static/news/css/reset.css">
-	<link rel="stylesheet" type="text/css" href="/static/news/css/main.css">
+{% include "news/user_head.html" %}
     {#	<link rel="stylesheet" type="text/css" href="/static/news/js/jquery-1.12.4.min.js">#}
     {#  引入js文件需要使用script标签  #}
-    <script type="text/javascript" src="/static/news/js/jquery-1.12.4.min.js"></script>
+    <script type="text/javascript" src="/static/news/js/jquery.form.min.js"></script>
     <script type="text/javascript" src="/static/news/js/user_base_info.js"></script>
 </head>
 <body class="inframe_body">
