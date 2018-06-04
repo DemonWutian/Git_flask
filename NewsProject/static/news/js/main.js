@@ -126,6 +126,7 @@ $(function(){
                 $(".user_login").show();
                 $(".lgin_pic").attr("src", data.avatar_url);
                 $("#nick_name").text(data.nick_name);
+                location.href = location.pathname
             }
             else if(data.result==4){
                 alert("密码错误!")
@@ -207,6 +208,8 @@ $(function(){
                 else {
                     $(".user_btns").show();
                     $(".user_login").hide();
+                    $(".collection").show();
+                    $(".collected").hide();
                 }
             }
         })

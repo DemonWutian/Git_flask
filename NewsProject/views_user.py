@@ -106,6 +106,27 @@ def register():
     return jsonify(result=7)
 
 
+def login_hour_count():
+    now = datetime.now()
+    login_key = "login%d_%d_%d" % (now.year, now.month, now.day)
+    login_prop = ['08:15', '09:15', '10:15', '11:15', '12:15', '13:15', '14:15', '15:15', '16:15', '17:15', '18:15',
+                  '19:15']
+    for index, item in enumerate(login_prop):
+        if now.hour < index + 8 or (now.hour == index + 8 and now.minute <= 15):
+            count = int(current_app.redis_client.hget(login_key, item))
+            count += 1
+            current_app.redis_client.hset(login_key, item, count)
+    else:
+        count = int(current_app.redis_client.hget(login_key, "19:15"))
+        count += 1
+        current_app.redis_client.hset(login_key, "19:15", count)
+
+        # if now.hour < 8 or (now.hour==8 and now.minute<=15):
+        #     count = int(current_app.redis_client.hget(login_key, "08:15"))
+        #     count += 1
+        #     current_app.redis_client.hset(login_key, "08:15", count)
+
+
 @user_blueprint.route('/login', methods=["POST"])
 def login():
     # 接收数据
@@ -124,8 +145,11 @@ def login():
     if user:
         # 判断密码是否正确
         if user.check_pwd(pwd):
-            # 正确
+            # 统计每小时登陆次数
+            login_hour_count()
+            # 正确, 状态保持
             session["user_id"] = user.id
+
             return jsonify(result=3, avatar_url=user.avatar_url, nick_name=user.nick_name)
         else:
             # 错误

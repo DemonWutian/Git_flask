@@ -20,21 +20,21 @@
             <div class="user_btns fr">
                 <a href="javascript:;" class="login_btn">登录</a> / <a href="javascript:;" class="register_btn">注册</a>
             </div>
-			<div class="user_login fr" style="display: block;">
-				<img src="{{ user.avatar_url }}" class="lgin_pic">
-				<a href="/user/" id="nick_name">{{ user.nick_name }}</a>
-				<a href="javascript:;" id="logout">退出</a>
-			</div>
-            {% else %}
-            <div class="user_btns fr" style="display: none;">
+            <div class="user_login fr">
+                <img src="" class="lgin_pic">
+                <a href="/user/" id="nick_name"></a>
+                <a href="javascript:;" id="logout">退出</a>
+            </div>
+        {% else %}
+            <div class="user_btns fr" style="display:none;">
                 <a href="javascript:;" class="login_btn">登录</a> / <a href="javascript:;" class="register_btn">注册</a>
             </div>
-			<div class="user_login fr" style="display: block;">
-				<img src="{{ user.avatar_url }}" class="lgin_pic">
-				<a href="/user/" id="nick_name">{{ user.nick_name }}</a>
-				<a href="javascript:;" id="logout">退出</a>
-			</div>
-            {% endif %}
+            <div class="user_login fr" style="display: block;">
+                <img src="{{ user.avatar_url }}" class="lgin_pic">
+                <a href="/user/" id="nick_name">{{ user.nick_name }}</a>
+                <a href="javascript:;" id="logout">退出</a>
+            </div>
+        {% endif %}
 		</div>
 	</div>
 {% block body %}{% endblock %}

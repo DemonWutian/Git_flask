@@ -1,5 +1,6 @@
 # coding=utf-8
 from flask import Flask
+from flask import render_template
 from flask_wtf.csrf import CSRFProtect
 from flask_session import Session
 
@@ -38,6 +39,21 @@ def creat_app(config):
     logging.getLogger().addHandler(file_log_handler)
     app.logger_xjzx = logging
 
+    # 从config中读取session配置
+    host = app.config.get("REDIS_HOST")
+    port = app.config.get("REDIS_PORT")
+    db = app.config.get("REDIS_DB")
+
+    # 将用户对评论的回复存储到redis中
+    import redis
+    app.redis_client = redis.StrictRedis(host=host, port=port, db=db)
+
+    @app.errorhandler(404)
+    def not_found_errot(e):
+        return render_template("news/404.html")
+
     return app
+
+
 
 

@@ -1,13 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>新经资讯后台管理</title>
-    <link rel="stylesheet" type="text/css" href="css/reset.css">
-    <link rel="stylesheet" type="text/css" href="css/main.css">
-    <link rel="stylesheet" href="css/jquery.pagination.css">
-    <script type="text/javascript" src="js/jquery-1.12.4.min.js"></script>
-    <script type="text/javascript" src="js/jquery.pagination.min.js"></script>
+    {% include "admin/head.html" %}
+    <link rel="stylesheet" href="/static/admin/css/jquery.pagination.css">
+    <script type="text/javascript" src="/static/admin/js/jquery-1.12.4.min.js"></script>
+    <script type="text/javascript" src="/static/admin/js/jquery.pagination.min.js"></script>
 </head>
 <body>
     <div class="breadcrub">
@@ -21,60 +18,14 @@
                     <th>注册时间</th>
                     <th>上次登录时间</th>
                 </tr>
+                {% for user in user_list1 %}
                 <tr>
-                    <td>张大山</td>
-                    <td>13534888888</td>
-                    <td>2018-2-28 23:07:26</td>
-                    <td>2018-2-28 23:07:26</td>
+                    <td>{{ user.nick_name }}</td>
+                    <td>{{ user.mobile }}</td>
+                    <td>{{ user.create_time }}</td>
+                    <td>{{ user.update_time }}</td>
                 </tr>
-                <tr>
-                    <td>张大山</td>
-                    <td>13534888888</td>
-                    <td>2018-2-28 23:07:26</td>
-                    <td>2018-2-28 23:07:26</td>
-                </tr>
-                <tr>
-                    <td>张大山</td>
-                    <td>13534888888</td>
-                    <td>2018-2-28 23:07:26</td>
-                    <td>2018-2-28 23:07:26</td>
-                </tr>
-                <tr>
-                    <td>张大山</td>
-                    <td>13534888888</td>
-                    <td>2018-2-28 23:07:26</td>
-                    <td>2018-2-28 23:07:26</td>
-                </tr>
-                <tr>
-                    <td>张大山</td>
-                    <td>13534888888</td>
-                    <td>2018-2-28 23:07:26</td>
-                    <td>2018-2-28 23:07:26</td>
-                </tr>
-                <tr>
-                    <td>张大山</td>
-                    <td>13534888888</td>
-                    <td>2018-2-28 23:07:26</td>
-                    <td>2018-2-28 23:07:26</td>
-                </tr>
-                <tr>
-                    <td>张大山</td>
-                    <td>13534888888</td>
-                    <td>2018-2-28 23:07:26</td>
-                    <td>2018-2-28 23:07:26</td>
-                </tr>
-                <tr>
-                    <td>张大山</td>
-                    <td>13534888888</td>
-                    <td>2018-2-28 23:07:26</td>
-                    <td>2018-2-28 23:07:26</td>
-                </tr>
-                <tr>
-                    <td>张大山</td>
-                    <td>13534888888</td>
-                    <td>2018-2-28 23:07:26</td>
-                    <td>2018-2-28 23:07:26</td>
-                </tr>
+                {% endfor %}
             </table>
         </div>
 
@@ -85,10 +36,10 @@
         <script>
             $(function() {
                 $("#pagination").pagination({
-                    currentPage: 2,
-                    totalPage: 3,
+                    currentPage: {{ page }},
+                    totalPage: {{ total_page }},
                     callback: function(current) {
-                        alert('ok!');
+                        location.href="?page="+current;
                     }
                 });
             });

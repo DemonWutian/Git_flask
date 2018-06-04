@@ -1,0 +1,11 @@
+{% macro count_list_show(count_list) %}
+<div class="rank_title">
+    <h3>点击排行</h3>
+</div>
+<ul class="rank_list">
+    {% for news in count_list %}
+        <li><span class="count{{ loop.index }}">{{ loop.index }}</span><a href="/{{ news.id }}">{{ news.title }}</a>
+        </li>
+    {% endfor %}
+</ul>
+{% endmacro %}
