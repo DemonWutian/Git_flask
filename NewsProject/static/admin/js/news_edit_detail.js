@@ -4,9 +4,9 @@ function getCookie(name) {
 }
 
 $(function(){
-    $(".news_edit").submit(function (e) {
-        e.preventDefault()
-    })
+    // $(".news_edit").submit(function (e) {
+    //     e.preventDefault()
+    // })
 })
 
 // 点击取消，返回上一页

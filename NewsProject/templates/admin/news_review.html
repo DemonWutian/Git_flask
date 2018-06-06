@@ -2,64 +2,87 @@
 <html lang="en">
 <head>
     {% include "admin/head.html" %}
-    <link rel="stylesheet" href="/static/admin/css/jquery.pagination.css">
-	<script type="text/javascript" src="/static/admin/js/jquery-1.12.4.min.js"></script>
-	<script type="text/javascript" src="/static/admin/js/jquery.pagination.min.js"></script>
 </head>
 <body>
-	<div class="breadcrub">
-			当前位置：新闻管理>新闻审核
-			<form class="news_filter_form">
-				<input type="text" placeholder="请输入关键字" class="input_txt">
-				<input type="submit" value="搜 索" class="input_sub">
-			</form>
-		</div>
-		<div class="pannel">
-			<table class="common_table">
-				<tr>
-					<th width="3%">id</th>
-					<th width="70%">标题</th>
-					<th width="15%">发布时间</th>
-					<th width="5%">状态</th>
-					<th width="8%">管理操作</th>
-				</tr>
-                {% for news in news_list %}
-				<tr>
-					<td>{{ news.id }}</td>
-					<td class="tleft">{{ news.title }}</td>
-					<td>{{ news.create_time }}</td>
-                    {% if news.status==1 %}
-                    <td>审核中</td>
-                    {% elif news.status==2 %}
-                    <td>通过</td>
-                    {% elif news.status==3 %}
-                    <td>未通过</td>
-                    {% endif %}
+<div class="breadcrub">
+    当前位置：新闻管理>新闻审核
+    <form class="news_filter_form">
+        <input type="text" placeholder="请输入关键字" class="input_txt">
+        <input type="submit" value="搜 索" class="input_sub">
+    </form>
+</div>
+<div class="pannel">
+    <table class="common_table">
+        <tr>
+            <th width="3%">id</th>
+            <th width="70%">标题</th>
+            <th width="15%">发布时间</th>
+            <th width="5%">状态</th>
+            <th width="8%">管理操作</th>
+        </tr>
+            <tr v-for="news in news_list">
+                <td>[[news.id]]</td>
+                <td class="tleft">[[news.title]]</td>
+                <td>[[news.create_time]]</td>
+                    <td v-if="news.status==1">审核中</td>
+                    <td v-else-if="news.status==2">通过</td>
+                    <td v-else>未通过</td>
+                <td>
+                    <a :href="'/admin/news_review_detail/'+news.id" class="review">审核</a>
+                </td>
+            </tr>
+    </table>
+</div>
 
-					<td>
-						<a href="news_review_detail.html" class="review">审核</a>
-					</td>
-				</tr>
-                {% endfor %}
-			</table>
-		</div>
+<div class="box">
+    <div id="pagination" class="page"></div>
+</div>
 
-		<div class="box">
-			<div id="pagination" class="page"></div>
-		</div>
+<script>
+    var input_txt = '';
+    $(function () {
+        vue_list_con = new Vue({
+            el: ".common_table",
+            delimiters: ['[[', ']]'],
+            data: {
+                news_list: []
+            }
+        });
+        get_news_list();
 
-        <script>
-			$(function() {
-				$("#pagination").pagination({
-					currentPage: {{ page }},
-					totalPage: {{ total_page }},
-					callback: function(current) {
-					    location.href = "?page=" + current
-					}
-				});
-			});
-		</script>
+        // 搜索
+        $(".news_filter_form").submit(function (e) {
+            e.preventDefault();
+            input_txt = $(".input_txt").val();
+            get_news_list()
+        })
 
-	
+    });
+    function get_news_list() {
+        $.get("/admin/news_review_json", {
+            "input_txt": input_txt
+        }, function (data) {
+            // 数据显示到html中
+            vue_list_con.news_list = data.news_list;
+            // 初始化分页
+            $("#pagination").pagination({
+                currentPage: 1,
+                totalPage: data.total_page,
+                callback: function (current) {
+                    $.get("/admin/news_review_json", {
+                        "page": current,
+                        // 搜索
+                        "input_txt": input_txt
+                    }, function (data) {
+                        vue_list_con.news_list = data.news_list;
+                    });
+                }
+            });
+        });
+
+    }
+</script>
+
+
 </body>
 </html>
